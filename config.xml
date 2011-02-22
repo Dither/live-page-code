@@ -1,6 +1,7 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <widget xmlns="http://www.w3.org/ns/widgets" id="extensions:save-snapshot" version="1.2">
   <name>Save snapshot of the page</name>
+  <author href="http://my.opera.com/DitherSky/blog/">Dither</author>
   <description>For correct saving create «text/phf» MIME type (Settings->Preferences->Downloads->Add) with «htm» extension and "Save to disk" action.</description>
   <preference name="saveimages" value="true"/>
   <preference name="encodeb64" value="true"/>
