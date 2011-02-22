@@ -1,0 +1,43 @@
+<doctype html>
+<html><head><title>Save Page Snapshot</title>
+<script>
+function s2b(s) { return s === "true" ? true : false; }
+
+window.addEventListener('load', function () {
+	var tab;
+	var saveimg, encb64;
+	opera.extension.onmessage = function (e) {
+		var type = e.data.type;
+		switch (type) {
+		case 'got-url':
+			if (tab) opera.extension.tabs.update(tab, {
+				url: e.data.url,
+				focused: true
+			});
+			break;
+		}
+	}
+
+	var button = opera.contexts.toolbar.createItem({
+		disabled: false,
+		title: "Save page snapshot",
+		icon: "icons/icon16.png",
+		onclick: function () {
+			try {
+				tab = opera.extension.tabs.getFocused();
+			} catch (ex) {}
+			if (tab) opera.extension.broadcastMessage({
+				type: 'save-snapshot-encode',
+				url: tab.url,
+				images: s2b(widget.preferences['saveimages']) || false,
+				b64: s2b(widget.preferences['encodeb64']) || true,
+				debug: s2b(widget.preferences['debugmode']) || false,
+			});
+		}
+	});
+	
+	opera.contexts.toolbar.addItem(button);
+}, false);
+</script>
+</head>
+</html>
