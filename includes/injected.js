@@ -179,7 +179,7 @@ window.addEventListener('load', function(){
 		bImages = e.data.images;
 		bB64enc = e.data.b64;
 		bDebug = e.data.debug;
-		e.source.postMessage({type: 'got-url', url: getsnapshot()});
+		if (e.source) e.source.postMessage({type: 'got-url', url: getsnapshot()});
 		break;
 	}}
 },false);

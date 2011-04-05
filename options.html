@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="css/options.css">
-<title id="widget-title">Opera Extensions | Save Page Snapshot</title>
+<title id="widget-title">Save Page Snapshot | Settings</title>
 </head>
 <body>
   <header>
@@ -12,24 +12,23 @@
   </header>
 
   <section>
-    <p>Settings for saving pages.</p>
-
-    <h3>Preferences</h3>
+    <h3>Settings</h3>
     <fieldset>
       <p>
         <input name="check" id="saveimages" type="checkbox"></input>
-        <label for="saveimages">Save images as data uri inside the page *</label>
+        <label for="saveimages">Save images as data-URI inside the page code*</label>
       </p>
       <p>
         <input name="check" id="encodeb64" type="checkbox"></input>
-        <label for="encodeb64">Encode uri in base64 when opening</label>
+        <label for="encodeb64">Encode URI as base64 when opening**</label>
       </p>
       <p>
         <input name="check" id="debugmode" type="checkbox"></input>
         <label for="debugmode">Enable debug output</label>
       </p>
     </fieldset>
-     <br /><p>* images are saved only if they from the same domain as the page.</p>
+     <br /><p>*  only if images are from the same domain.<br />
+     ** prevents save blocking by Opera's URL-filter.</p>
   </section>
 
   <footer>
@@ -73,6 +72,7 @@ function getOptions() {
 setOptions();
 var inputs = document.querySelectorAll("input");
 for (var n=0, e; e=inputs[n]; n++) e.addEventListener("change", optionChange, false);
+
 },false);
 </script>
 </body>
