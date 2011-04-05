@@ -1,14 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="css/options.css">
-  <title id="widget-title">Opera Extensions | Save Page Snapshot</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/options.css">
+<title id="widget-title">Opera Extensions | Save Page Snapshot</title>
 </head>
 <body>
   <header>
     <img src="icons/icon.png">
-    <h1 id="widget-name">Save Page Snapshot v1.2</h1>
+    <h1 id="widget-name">Save Page Snapshot</h1>
   </header>
 
   <section>
@@ -37,16 +37,13 @@
   </footer>
 
 <script>
-
-
 addEventListener('DOMContentLoaded', function() {
-
-    var storage = widget.preferences;
-    
-    setOptions();
-    var inputs = document.querySelectorAll("input");
-    for (var n=0, e; e=inputs[n]; n++) e.addEventListener("change", optionChange, false);
-
+var storage;
+if (typeof widget === 'undefined' || !widget.preferences) {
+    storage = window.opera.scriptStorage
+} else {
+    storage = widget.preferences;
+}
 function s2b(s) { return s === "true" ? true : false; }
 
 function setOptions() {
@@ -71,6 +68,11 @@ function getOptions() {
         debugmode: document.querySelector("#debugmode").checked,
     };
 }
+
+// main
+setOptions();
+var inputs = document.querySelectorAll("input");
+for (var n=0, e; e=inputs[n]; n++) e.addEventListener("change", optionChange, false);
 },false);
 </script>
 </body>

@@ -109,7 +109,7 @@ var getsnapshot = function () {
 		    	if (imgcache[imgsrc] != null) images[i].src = imgcache[imgsrc];
 		        else {
 		        	imgcache[imgsrc] = dataEncodeImg(images[i]);
-		        	images[i].src = imgcache[imgsrc];
+		        	if (imgcache[imgsrc]) images[i].src = imgcache[imgsrc];
 		        }
 		}
 	    };
@@ -179,7 +179,7 @@ window.addEventListener('load', function(){
 		bImages = e.data.images;
 		bB64enc = e.data.b64;
 		bDebug = e.data.debug;
-		opera.extension.postMessage({type: 'got-url', url: getsnapshot()});
+		e.source.postMessage({type: 'got-url', url: getsnapshot()});
 		break;
 	}}
 },false);
