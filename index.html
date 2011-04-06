@@ -3,20 +3,17 @@
 <title>Save Page Snapshot</title>
 <script>
 window.addEventListener('load', function () {
-function s2b(s) { return s ===  'true' ? true : false; }
+if (typeof widget === 'undefined' || !widget.preferences) { storage = window.opera.scriptStorage; }
+else { storage = widget.preferences; }
 
-if (typeof widget === 'undefined' || !widget.preferences) {
-    storage = window.opera.scriptStorage
-} else {
-    storage = widget.preferences;
-}
+function s2b(s) { return s ===  'true' ? true : false; }
+function log(){ if (s2b(storage['debugmode'])) opera.postError(Array.prototype.slice.call(arguments)); }
 
 var tab, saveimg, encb64;
 opera.extension.onmessage = function (e) {
-    switch (e.data.type) {
-    case 'got-url':
+    if (e.data.type == 'got-url') {
+    	if (tab) log('[SaveSnapshot]: initiating save dialog...');
         if (tab) opera.extension.tabs.update(tab, { url: e.data.url, focused: true });
-        break;
     }
 }
 
@@ -25,9 +22,10 @@ var button = opera.contexts.toolbar.createItem({
     title: 'Save page snapshot',
     icon: 'icons/icon16.png',
     onclick: function () {
-        try { tab = opera.extension.tabs.getFocused(); } catch (e) {;}
+        log('[SaveSnapshot]: toolbar button clicked.');
+        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('[SaveSnapshot]: active tab not found.');}
         if (tab) opera.extension.broadcastMessage({
-            type: 'save-snapshot-encode',
+            type: 'save-snapshot',
             url: tab.url,
             images: s2b(storage['saveimages']) || false,
             b64: s2b(storage['encodeb64']) || true,

@@ -4,7 +4,9 @@
 // ==/UserScript==
 
 (function(){
-var bImages, bB64enc, bDebug;
+var bImages = false, bB64enc = true, bDebug = false;
+
+function log(){ if (bDebug) opera.postError(Array.prototype.slice.call(arguments)); }
 
 var dataEncodeImg = function (img) {
         var canvas = window.document.getElementById('tmpcanvas');
@@ -26,6 +28,7 @@ var dataEncodeImg = function (img) {
 var getsnapshot = function () {
     var encodeBase64 = function (a) {
         if (!bB64enc) return a;
+        else log('[SaveSnapshot]: encoding page content as base64...');
         var b, c, d, e = '',
             f = [],
             i = 0,
@@ -63,11 +66,10 @@ var getsnapshot = function () {
     var selWin = function (w) {
         if (w.getSelection() != '') return w;
         for (var i = 0, f, r; f = w.frames[i]; i++) {
-            try {
-                if (r = arguments.callee(f)) return r
-            } catch (e) {}
+            try { if (r = arguments.callee(f)) return r; } catch (e) {;}
         }
     };
+    
     var ele, pEle, clone;
     var doctype = '';
     var doc = window.document;
@@ -87,6 +89,7 @@ var getsnapshot = function () {
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true)
     };
 
+    log('[SaveSnapshot]: cloning document...');
     while (pEle) {
         if (pEle.nodeType == 1) {
             clone = pEle.cloneNode(false);
@@ -99,6 +102,7 @@ var getsnapshot = function () {
     var sel = doc.createElement('div');
     sel.appendChild(ele);
     
+    log('[SaveSnapshot]: parsing images = '+bImages);
     if (bImages) {
 	    var imgcache=[], images = sel.getElementsByTagName('img');
 	    for (var i = images.length; i--;) {
@@ -106,16 +110,18 @@ var getsnapshot = function () {
 	    	if (imgsrc == null) continue;
 	    	if (domain == imgsrc.substring(0, domain.length))
 	    	{
-		    	if (imgcache[imgsrc] != null) images[i].src = imgcache[imgsrc];
+	    		if(bDebug) log('[SaveSnapshot]: parsing image from '+imgsrc);
+		    	if (imgcache[imgsrc]) images[i].src = imgcache[imgsrc];
 		        else {
-		        	imgcache[imgsrc] = dataEncodeImg(images[i]);
-		        	if (imgcache[imgsrc]) images[i].src = imgcache[imgsrc];
+		        	if (imgcache[imgsrc] = dataEncodeImg(images[i])) images[i].src = imgcache[imgsrc];
+		        	if(bDebug) log('[SaveSnapshot]: img cached and converted to '+imgcache[imgsrc].substring(0,60)+'...');
 		        }
 		}
 	    };
 	    imgcache = null;
     }
     
+    log('[SaveSnapshot]: removing scripts...');
     var scripts = sel.getElementsByTagName('script');
     for (var i = scripts.length; i--;) {
         scripts[i].parentNode.removeChild(scripts[i])
@@ -140,6 +146,7 @@ var getsnapshot = function () {
     if (!b.href) b.href = link;
     h.appendChild(b);
     
+    log('[SaveSnapshot]: parsing styles...');
     var styles = doc.styleSheets;
     for (var i = 0, si; si = styles[i]; i++) {
         var style = doc.createElement('style');
@@ -162,23 +169,21 @@ var getsnapshot = function () {
         if (dt.systemId) doctype += ' \x22' + dt.systemId + '\x22';
         doctype += '>\n'
     };
+    
+    log('[SaveSnapshot]: page snapshot successfuly created.');
     return 'data:text/phf;charset=UTF-8;base64,' + encodeBase64(doctype + sel.innerHTML + '\n<!-- Saved from: ' + link + ' -->');
 }
 
-function log() {
-	if (!bDebug) return;
-	if (window.console) console.log(Array.prototype.slice.call(arguments));
-	else if (window.opera && window.opera.postError) window.opera.postError(arguments);
-}
-
-window.addEventListener('load', function(){
+document.addEventListener('DOMContentLoaded', function () {
 	if(opera.extension) opera.extension.onmessage = function(e){ switch (e.data.type){
 	case 'save-snapshot':
 	case 'save-snapshot-encode':
+		bDebug = e.data.debug;
+		log('[SaveSnapshot]: got "'+e.data.type+'" message for url='+e.data.url);
 		if (window.location.href.indexOf(e.data.url) == -1) break; //don't know why, but opera returns incomplete url for tabs
 		bImages = e.data.images;
 		bB64enc = e.data.b64;
-		bDebug = e.data.debug;
+		log('[SaveSnapshot]: e.source '+(!!e.source ? 'exists' : 'not exists')+'.');
 		if (e.source) e.source.postMessage({type: 'got-url', url: getsnapshot()});
 		break;
 	}}
