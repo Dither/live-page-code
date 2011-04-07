@@ -9,9 +9,10 @@ else { storage = widget.preferences; }
 function s2b(s) { return s ===  'true' ? true : false; }
 function log(){ if (s2b(storage['debugmode'])) opera.postError(Array.prototype.slice.call(arguments)); }
 
-var tab, saveimg, encb64;
+var tab;
 opera.extension.onmessage = function (e) {
     if (e.data.type == 'got-url') {
+        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('[SaveSnapshot]: active tab not found.');}
     	if (tab) log('[SaveSnapshot]: initiating save dialog...');
         if (tab) opera.extension.tabs.update(tab, { url: e.data.url, focused: true });
     }
@@ -24,7 +25,7 @@ var button = opera.contexts.toolbar.createItem({
     onclick: function () {
         log('[SaveSnapshot]: toolbar button clicked.');
         try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('[SaveSnapshot]: active tab not found.');}
-        if (tab) opera.extension.broadcastMessage({
+        if (tab) tab.postMessage({
             type: 'save-snapshot',
             url: tab.url,
             images: s2b(storage['saveimages']) || false,
