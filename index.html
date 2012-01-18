@@ -1,30 +1,28 @@
-<!DOCTYPE html>
-<html><head>
-<title>Save Page Snapshot</title>
+<!DOCTYPE html><html><head><title>Save Page Snapshot</title>
 <script>
 window.addEventListener('load', function () {
 if (typeof widget === 'undefined' || !widget.preferences) { storage = window.opera.scriptStorage; }
 else { storage = widget.preferences; }
 
 function s2b(s) { return s ===  'true' ? true : false; }
-function log(){ if (s2b(storage['debugmode'])) opera.postError(Array.prototype.slice.call(arguments)); }
+function log(){ if (s2b(storage['debugmode'])) opera.postError('[SaveSnapshot]: ' + Array.prototype.slice.call(arguments)); }
 
 var tab;
 opera.extension.onmessage = function (e) {
     if (e.data.type == 'got-url') {
-        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('[SaveSnapshot]: active tab not found.');}
-    	if (tab) log('[SaveSnapshot]: initiating save dialog...');
+        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}
+    	if (tab) log('initiating save dialog...');
         if (tab) opera.extension.tabs.update(tab, { url: e.data.url, focused: true });
     }
 }
 
 var button = opera.contexts.toolbar.createItem({
-    disabled: false,
+    disabled: true,
     title: 'Save page snapshot',
     icon: 'icons/icon16.png',
     onclick: function () {
-        log('[SaveSnapshot]: toolbar button clicked.');
-        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('[SaveSnapshot]: active tab not found.');}
+        log('toolbar button clicked.');
+        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}
         if (tab) tab.postMessage({
             type: 'save-snapshot',
             url: tab.url,
@@ -36,7 +34,6 @@ var button = opera.contexts.toolbar.createItem({
 });
 
 opera.contexts.toolbar.addItem(button);
-button.disabled = true;
 
 function enableButton() { if (opera.extension.tabs.getFocused()) { button.disabled = false; } else { button.disabled = true; } }
 

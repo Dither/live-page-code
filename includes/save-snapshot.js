@@ -6,7 +6,7 @@
 (function(){
 var bImages = false, bB64enc = true, bDebug = false;
 
-function log(){ if (bDebug) opera.postError(Array.prototype.slice.call(arguments)); }
+function log(){ if (bDebug) opera.postError('[SaveSnapshot]: ' + Array.prototype.slice.call(arguments)); }
 
 var dataEncodeImg = function (img) {
         var canvas = window.document.getElementById('tmpcanvas');
@@ -20,15 +20,14 @@ var dataEncodeImg = function (img) {
         
         var result = null;
         try { result = canvas.toDataURL(); } 
-        catch (ex) { //no cross-domain images allowed
-        }
+        catch (bugs) {;} //no cross-domain images allowed
         return result;
 }
     
 var getsnapshot = function () {
     var encodeBase64 = function (a) {
         if (!bB64enc) return a;
-        else log('[SaveSnapshot]: encoding page content as base64...');
+        else log('encoding page content as base64...');
         var b, c, d, e = '',
             f = [],
             i = 0,
@@ -75,7 +74,7 @@ var getsnapshot = function () {
     var doc = window.document;
     var loc = window.location;
     var win = selWin(window);
-    var domain=loc.protocol+"//"+loc.host+(loc.port!=''?':'+loc.port:'');
+    var domain=loc.protocol+'//'+loc.host+(loc.port!=''?':'+loc.port:'');
     
     if (win) {
         doc = win.document;
@@ -89,7 +88,7 @@ var getsnapshot = function () {
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true)
     };
 
-    log('[SaveSnapshot]: cloning document...');
+    log('cloning document...');
     while (pEle) {
         if (pEle.nodeType == 1) {
             clone = pEle.cloneNode(false);
@@ -102,7 +101,7 @@ var getsnapshot = function () {
     var sel = doc.createElement('div');
     sel.appendChild(ele);
     
-    log('[SaveSnapshot]: parsing images = '+bImages);
+    log('parsing images = '+bImages);
     if (bImages) {
 	    var imgcache=[], images = sel.getElementsByTagName('img');
 	    for (var i = images.length; i--;) {
@@ -110,18 +109,18 @@ var getsnapshot = function () {
 	    	if (imgsrc == null) continue;
 	    	if (domain == imgsrc.substring(0, domain.length))
 	    	{
-	    		if(bDebug) log('[SaveSnapshot]: parsing image from '+imgsrc);
+	    		if(bDebug) log('parsing image from '+imgsrc);
 		    	if (imgcache[imgsrc]) images[i].src = imgcache[imgsrc];
 		        else {
 		        	if (imgcache[imgsrc] = dataEncodeImg(images[i])) images[i].src = imgcache[imgsrc];
-		        	if(bDebug) log('[SaveSnapshot]: img cached and converted to '+imgcache[imgsrc].substring(0,60)+'...');
+		        	if(bDebug) log('img cached and converted to '+imgcache[imgsrc].substring(0,60)+'...');
 		        }
 		}
 	    };
 	    imgcache = null;
     }
     
-    log('[SaveSnapshot]: removing scripts...');
+    log('removing scripts...');
     var scripts = sel.getElementsByTagName('script');
     for (var i = scripts.length; i--;) {
         scripts[i].parentNode.removeChild(scripts[i])
@@ -146,7 +145,7 @@ var getsnapshot = function () {
     if (!b.href) b.href = link;
     h.appendChild(b);
     
-    log('[SaveSnapshot]: parsing styles...');
+    log('parsing styles...');
     var styles = doc.styleSheets;
     for (var i = 0, si; si = styles[i]; i++) {
         var style = doc.createElement('style');
@@ -170,8 +169,8 @@ var getsnapshot = function () {
         doctype += '>\n'
     };
     
-    log('[SaveSnapshot]: page snapshot successfuly created.');
-    return 'data:text/phf;charset=UTF-8;base64,' + encodeBase64(doctype + sel.innerHTML + '\n<!-- Saved from: ' + link + ' -->');
+    log('page snapshot successfuly created.');
+    return 'data:text/phf;charset=UTF-8;base64,' + encodeBase64(doctype + sel.innerHTML + '\n<!-- Saved from: ' + link + ' @ ' + Date() + ' -->');
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -179,11 +178,11 @@ document.addEventListener('DOMContentLoaded', function () {
 	case 'save-snapshot':
 	case 'save-snapshot-encode':
 		bDebug = e.data.debug;
-		log('[SaveSnapshot]: got "'+e.data.type+'" message for url='+e.data.url);
+		log('got "'+e.data.type+'" message for url='+e.data.url);
 		if (window.location.href.indexOf(e.data.url) == -1) break; //don't know why, but opera returns incomplete url for tabs
 		bImages = e.data.images;
 		bB64enc = e.data.b64;
-		log('[SaveSnapshot]: e.source '+(!!e.source ? 'exists' : 'not exists')+'.');
+		log('e.source '+(!!e.source ? 'exists' : 'not exists')+'.');
 		if (e.source) e.source.postMessage({type: 'got-url', url: getsnapshot()});
 		break;
 	}}
