@@ -13,18 +13,10 @@ v1.4:
 * Notify-it support;  
 * Minor changes;  
 
-v1.32:
-
-* fix for null img src's;  
-* button automatically disabled for blank pages;  
-* fixed multiple save dialogs if several tabs of the same url opened;  
-
-v1.31:
-
-* fixed loading on some sites;  
-* actual debug info;  
-
-v1.3:  
+v1.32:  
 
 * fix for "null" image src's;  
-* button automatically disabled for blank pages;  
+* button automatically disabled for blank pages;
+* fixed multiple save dialogs if several tabs of the same url opened;
+* fixed loading on some sites;  
+* actual debug info;  
