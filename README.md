@@ -7,7 +7,8 @@ For correct saving create «text/phf» MIME type (Settings-Preferences-Advanced-
 
 Changelog:
 v1.4:
-* N
+* Notify-it support;
+* Minor changes;
 v1.32:
 * fix for null img src's;
 * button automatically disabled for blank pages.

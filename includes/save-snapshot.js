@@ -120,8 +120,8 @@ var getsnapshot = function () {
                 }
             }
         };
-        log(logarray.length && logarray.join('\n'));
-        imgcache = null;
+        logarray.length && log(logarray.join('\n'));
+        imgcache = logarray = null;
     }
     
     log('removing scripts...');
