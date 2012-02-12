@@ -184,9 +184,9 @@ if(opera.extension)
             case 'save-snapshot':
             case 'save-snapshot-encode':
                 bDebug = e.data.debug;
-                log('got "' + e.data.type + '" message for url=' + e.data.url);
+                //log('got "' + e.data.type + '" message for url=' + e.data.url);
                 if(window.location.href.indexOf(e.data.url) == -1) break;
-                //don't know why, but opera returns incomplete urls for tabs sometimes
+                //don't know why, but Opera returns incomplete urls for tabs sometimes
                 bImages = e.data.images;
                 bB64enc = e.data.b64;
 
@@ -205,7 +205,7 @@ if(opera.extension)
                     document.dispatchEvent(noe);
                     ///////////////////
                 } else {
-                    log('e.source not exist.');
+                    log('e.source does not exist.');
                 }
                 break;
         }
