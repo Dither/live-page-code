@@ -4,24 +4,30 @@
 // ==/UserScript==
 
 (function(){
-var bImages = false, bB64enc = true, bDebug = false;
+var dLastRun = (new Date()).getTime(), bImages = false, bB64enc = true, bDebug = false;
 function log(){ if (bDebug) opera.postError('[SaveSnapshot]: ' + Array.prototype.slice.call(arguments)); }
     
 var getsnapshot = function () {
+    var inArray = function(needle) {
+        for(var i = 0, l = this.length; i < l; i++) if(this[i] && this[i] === needle) return true;
+        return false;
+    };
     var uriEncodeImg = function (img) {
+            var result = null;
+            if (!img) return result;
+
             var canvas = window.document.getElementById('tmpcanvas');
             if (!canvas) canvas = window.document.createElement('canvas');
             canvas.id = 'tmpcanvas';
-            
+
             var context = canvas.getContext('2d');
             canvas.width = img.width;
             canvas.height = img.height;
             context.drawImage(img, 0, 0);
-            
-            var result = null;
+
             try { result = canvas.toDataURL(); } 
             catch (bug) { //no cross-domain images allowed
-                log(img.src + ' is crossdomain or don\'t come with access-control-allow for CORS.' );
+                log(img.src + ' is crossdomain or don\'t come with access-control-allow.' );
             }
             return result;
     };
@@ -75,7 +81,31 @@ var getsnapshot = function () {
     var loc = window.location;
     var win = selWin(window);
     var domain=loc.protocol+'//'+loc.host+(loc.port!=''?':'+loc.port:'');
-    
+
+    if (bImages) {
+        log('parsing images = ' + bImages);
+        if (bImages) {
+            var imgcache = [], logarray = [], images = doc.getElementsByTagName('img');
+            for (var imgsrc, i = images.length; i--;) {
+                images[i].width = images[i].width;
+                images[i].height = images[i].height;
+                imgsrc = images[i].src;
+                if (imgsrc === null || imgsrc === undefined) continue;
+                if (domain == imgsrc.substring(0, domain.length)) {
+                    if (bDebug) logarray.push('parsing image ' + imgsrc);
+                    if (!imgcache[imgsrc]) {
+                        imgcache[imgsrc] = uriEncodeImg(images[i]);
+                        if (!imgcache[imgsrc]) continue;
+                        if (bDebug) logarray.push('img cached and converted to ' + imgcache[imgsrc].substring(0,30)+' ... '+imgcache[imgsrc].substring(imgcache[imgsrc].length-30));
+                    }
+                    images[i].src = imgcache[imgsrc];
+                }
+            };
+            logarray.length && log('\n' + logarray.join('\n'));
+            imgcache = logarray = null;
+        }
+    }
+
     if (win) {
         doc = win.document;
         loc = win.location;
@@ -90,6 +120,9 @@ var getsnapshot = function () {
     } else {
         pEle = doc.documentElement;
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true);
+        // filter garbage blocks
+        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay, #autopatchwork_bar, .notifyit_message_area');
+        for (var i = 0; i < cleanUp.length; i++) ele.removeChild(cleanUp[i]);
     }
 
     log('cloning document...');
@@ -101,29 +134,10 @@ var getsnapshot = function () {
         }
         pEle = pEle.parentNode;
     };
-        
+
     var sel = doc.createElement('div');
     sel.appendChild(ele);
-    
-    log('parsing images = ' + bImages);
-    if (bImages) {
-        var imgcache = [], logarray = [], images = sel.getElementsByTagName('img');
-        for (var i = images.length; i--;) {
-            var imgsrc = images[i].src;
-            if (imgsrc === null) continue;
-            if (domain == imgsrc.substring(0, domain.length)) {
-                if (bDebug) logarray.push('parsing image ' + imgsrc);
-                if (imgcache[imgsrc]) images[i].src = imgcache[imgsrc];
-                else {
-                    if (imgcache[imgsrc] = uriEncodeImg(images[i])) images[i].src = imgcache[imgsrc];
-                    if (bDebug) logarray.push('img cached and converted to ' + imgcache[imgsrc].substring(0,70)+'...');
-                }
-            }
-        };
-        logarray.length && log(logarray.join('\n'));
-        imgcache = logarray = null;
-    }
-    
+  
     log('removing scripts...');
     var scripts = sel.getElementsByTagName('script');
     for (var i = scripts.length; i--;) {
@@ -150,12 +164,14 @@ var getsnapshot = function () {
     h.appendChild(b);
     
     log('parsing styles...');
-    var styles = doc.styleSheets;
-    for (var i = 0, si; si = styles[i]; i++) {
-        var style = doc.createElement('style');
+    var styles = doc.styleSheets,
+        styleStopListIDs = ['notifyit_style','sCSS','uCSS', 'qbCSS'];
+    for (var style, si, i = 0; si = styles[i]; i++) {
+        style = doc.createElement('style');
         style.type = 'text/css';
-        if (si.media.mediaText) style.media = si.media.mediaText;
+        if (si.media && si.media.mediaText) style.media = si.media.mediaText;
         try {
+            if (si.ownerNode && si.ownerNode.id && inArray.call(styleStopListIDs, si.ownerNode.id)) continue;
             for (var j = 0, rule; rule = si.cssRules[j]; j++) {
                 style.appendChild(doc.createTextNode(rule.cssText + '\n'));
             }
@@ -174,42 +190,61 @@ var getsnapshot = function () {
     }
     
     log('page snapshot successfuly created.');
-    return 'data:text/phf;charset=UTF-8;base64,' + encodeBase64(doctype + sel.innerHTML + '\n<!-- Saved from: ' + link + ' @ ' + Date() + ' -->');
+    return 'data:text/phf;charset=UTF-8;base64,' + encodeBase64(doctype + sel.innerHTML.replace(/\n\s*\n/gi,'\n') + '\n<!-- Saved from: ' + link + ' @ ' + Date() + ' -->');
 };
 
+
 document.addEventListener('DOMContentLoaded', function() {
-if(opera.extension)
-    opera.extension.onmessage = function(e) {
-        switch (e.data.type) {
-            case 'save-snapshot':
-            case 'save-snapshot-encode':
-                bDebug = e.data.debug;
-                //log('got "' + e.data.type + '" message for url=' + e.data.url);
-                if(window.location.href.indexOf(e.data.url) == -1) break;
-                //don't know why, but Opera returns incomplete urls for tabs sometimes
-                bImages = e.data.images;
-                bB64enc = e.data.b64;
+    if(opera.extension)
+        opera.extension.onmessage = function(e) {
+            if(e.source) {
+                var dRun = (new Date()).getTime();
+                if (dRun - dLastRun > 1000) {
+                    switch (e.data.type) {
+                        case 'save-snapshot':
+                        case 'save-snapshot-encode':
+                            bDebug = e.data.debug;
+                            if(decodeURI(window.location.href).indexOf(decodeURI(e.data.url)) === -1) break;
+                            //don't know why, but Opera returns incomplete urls for tabs sometimes
+                            bImages = e.data.images;
+                            bB64enc = e.data.b64;
 
-                if(e.source) {
-                    e.source.postMessage({
-                        type: 'got-url',
-                        url: getsnapshot()
-                    });
-                    ///////////////////
-                    var noe = document.createEvent('CustomEvent');
-                    noe.initCustomEvent('Notify.It', false, false, {
-                        extension: 'save-snapshot',
-                        text: 'Page snapshot created.',
-                        type: '',
-                    });
-                    document.dispatchEvent(noe);
-                    ///////////////////
+                            // gray overlay to display some progress       
+                            var div = document.createElement('div');
+                            div.setAttribute('style', 'opacity:0.5 !important; background-color:#000 !important; width:100% !important; height:100% !important; z-index:100 !important; top:0 !important; left:0 !important; position:fixed !important;');
+                            div.setAttribute('id', 'save-snapshot-overlay');
+                            document.body.appendChild(div);
+    
+                            e.source.postMessage({
+                                type: 'got-url',
+                                url: getsnapshot()
+                            });
+    
+                            window.addEventListener('focus', function(ev) {
+                                document.body.removeChild(document.getElementById("save-snapshot-overlay"));
+                                this.removeEventListener(ev.type, arguments.callee, true);
+                            }, true);
+
+                            ///////////////////
+                            try {
+                                var noe = document.createEvent('CustomEvent');
+                                noe.initCustomEvent('Notify.It', false, false, {
+                                    extension: 'save-snapshot',
+                                    text: 'Page snapshot created.',
+                                    type: '',
+                                });
+                                document.dispatchEvent(noe);
+                            } catch (bug) {}
+                            ///////////////////
+                            break;
+                      }
                 } else {
-                    log('e.source does not exist.');
+                    log('you are trying to save too fast.');
                 }
-                break;
-        }
-    };
+            } else {
+                log('e.source does not exist.');
+            }
+            dLastRun = dRun;
+        };
 }, false);
-
 })();
