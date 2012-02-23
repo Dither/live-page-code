@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:save-snapshot" version="1.4">
+<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:live-page-code" version="1.4">
   <name>Live Page Code</name>
   <author href="http://my.opera.com/DitherSky/blog/">Dither</author>
   <description xml:lang="en">Extension adds toolbar button for saving page source code with CSS styles and modifications made by scripts and the browser</description>
