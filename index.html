@@ -1,11 +1,11 @@
-<!DOCTYPE html><html><head><title>Save Page Snapshot [background]</title>
+<!DOCTYPE html><html><head><title>Live Page Code [background]</title>
 <script>
 window.addEventListener('load', function () {
 if (typeof widget === 'undefined' || !widget.preferences) { storage = window.opera.scriptStorage; }
 else { storage = widget.preferences; }
 
 function s2b(s) { return s ===  'true' ? true : false; }
-function log(){ if (s2b(storage['debugmode'])) opera.postError('[SaveSnapshot]: ' + Array.prototype.slice.call(arguments)); }
+function log(){ if (s2b(storage['debugmode'])) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
 
 var tab;
 opera.extension.onmessage = function (e) {
@@ -18,8 +18,8 @@ opera.extension.onmessage = function (e) {
 
 var button = opera.contexts.toolbar.createItem({
     disabled: true,
-    title: 'Save page snapshot',
-    icon: 'icons/icon16.png',
+    title: 'Save live page code',
+    icon: 'icons/icon16.gif',
     onclick: function () {
         log('toolbar button clicked.');
         try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}

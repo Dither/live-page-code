@@ -5,7 +5,7 @@
 
 (function(){
 var dLastRun = (new Date()).getTime(), bImages = false, bB64enc = true, bDebug = false;
-function log(){ if (bDebug) opera.postError('[SaveSnapshot]: ' + Array.prototype.slice.call(arguments)); }
+function log(){ if (bDebug) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
     
 var getsnapshot = function () {
     var inArray = function(needle) {

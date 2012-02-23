@@ -3,32 +3,32 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="css/options.css">
-<title id="widget-title">Save Page Snapshot | Settings</title>
+<title id="widget-title">Live Page Code</title>
 </head>
 <body>
   <header>
-    <img src="icons/icon.png">
-    <h1 id="widget-name">Save Page Snapshot</h1>
+    <img src="icons/icon.gif">
+    <h1 id="widget-name">Live Page Code</h1>
   </header>
 
   <section>
-    <h3>Settings</h3>
+    <h3 id="MSG_settings">Settings</h3>
     <fieldset>
       <p>
         <input name="check" id="saveimages" type="checkbox"></input>
-        <label for="saveimages">Save images as data-URI inside the page code*</label>
+        <label for="saveimages" id="MSG_save">Save images as data-URI*</label>
       </p>
       <p>
         <input name="check" id="encodeb64" type="checkbox"></input>
-        <label for="encodeb64">Encode URI as base64 when opening**</label>
+        <label for="encodeb64" id="MSG_encode">Encode URI as base64 when opening**</label>
       </p>
       <p>
         <input name="check" id="debugmode" type="checkbox"></input>
-        <label for="debugmode">Enable debug output</label>
+        <label for="debugmode" id="MSG_debug">Enable debug output</label>
       </p>
     </fieldset>
-     <br /><p>*  only if images are from the same domain or the imagehost supports CORS.<br />
-     ** prevents save blocking by Opera's URL filter.</p>
+     <br /><p id="MSG_star_one">*  only if images are from the same domain or with CORS.</p>
+     <p id="MSG_star_two">** prevents save blocking by URL-filter.</p>
   </section>
 
   <footer>
@@ -44,6 +44,8 @@ if (typeof widget === 'undefined' || !widget.preferences) {
     storage = widget.preferences;
 }
 function s2b(s) { return s === "true" ? true : false; }
+
+document.getElementsByTagName('html')[0].setAttribute('lang', window.navigator.language.slice(0,2));
 
 function setOptions() {
     document.querySelector("#saveimages").checked = s2b(storage["saveimages"]);
