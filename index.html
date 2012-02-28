@@ -7,15 +7,6 @@ else { storage = widget.preferences; }
 function s2b(s) { return s ===  'true' ? true : false; }
 function log(){ if (s2b(storage['debugmode'])) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
 
-var tab;
-opera.extension.onmessage = function (e) {
-    if (e.data.type == 'got-url') {
-        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}
-    	if (tab) log('initiating save dialog...');
-        if (tab) opera.extension.tabs.update(tab, { url: e.data.url, focused: true });
-    }
-}
-
 var button = opera.contexts.toolbar.createItem({
     disabled: true,
     title: 'Save live page code',

@@ -215,10 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             div.setAttribute('id', 'save-snapshot-overlay');
                             document.body.appendChild(div);
     
-                            e.source.postMessage({
-                                type: 'got-url',
-                                url: getsnapshot()
-                            });
+                            window.location.href = getsnapshot();
     
                             window.addEventListener('focus', function(ev) {
                                 document.body.removeChild(document.getElementById("save-snapshot-overlay"));
