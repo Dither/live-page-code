@@ -7,7 +7,7 @@
 var dLastRun = (new Date()).getTime(), bImages = false, bB64enc = true, bDebug = false;
 function log(){ if (bDebug) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
     
-var getsnapshot = function () {
+var getsnapshot = function getsnapshot () {
     var inArray = function(needle) {
         for(var i = 0, l = this.length; i < l; i++) if(this[i] && this[i] === needle) return true;
         return false;
@@ -121,7 +121,7 @@ var getsnapshot = function () {
         pEle = doc.documentElement;
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true);
         // filter garbage blocks
-        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay, #autopatchwork_bar, .notifyit_message_area');
+        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay');//, #autopatchwork_bar, .notifyit_message_area, #readTools');
         for (var i = 0; i < cleanUp.length; i++) ele.removeChild(cleanUp[i]);
     }
 
@@ -214,8 +214,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             div.setAttribute('style', 'opacity:0.5 !important; background-color:#000 !important; width:100% !important; height:100% !important; z-index:100 !important; top:0 !important; left:0 !important; position:fixed !important;');
                             div.setAttribute('id', 'save-snapshot-overlay');
                             document.body.appendChild(div);
-    
+
+                            try {
                             window.location.href = getsnapshot();
+                            } catch (bug) { opera.postError(bug.stacktrace); }
     
                             window.addEventListener('focus', function(ev) {
                                 document.body.removeChild(document.getElementById("save-snapshot-overlay"));
