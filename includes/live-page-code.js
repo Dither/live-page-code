@@ -121,8 +121,11 @@ var getsnapshot = function getsnapshot () {
         pEle = doc.documentElement;
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true);
         // filter garbage blocks
-        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay');//, #autopatchwork_bar, .notifyit_message_area, #readTools');
-        for (var i = 0; i < cleanUp.length; i++) ele.removeChild(cleanUp[i]);
+        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay, #autopatchwork_bar, .notifyit_message_area, #readTools');
+        for (var i = 0; i < cleanUp.length; i++) {
+            cleanUp[i].innerHTML = '';
+            if(cleanUp[i].parentNode) cleanUp[i].parentNode.removeChild(cleanUp[i]);
+        }
     }
 
     log('cloning document...');
