@@ -6,7 +6,10 @@
 (function(){
 var dLastRun = (new Date()).getTime(), bImages = false, bB64enc = true, bDebug = false;
 function log(){ if (bDebug) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
-    
+
+var FILTER_SELECTORS = '#save-snapshot-overlay, #autopatchwork_bar, .notifyit_message_area, #readTools',
+    STYLE_ID_STOPLIST = ['notifyit_style','sCSS','uCSS', 'qbCSS'];
+
 var getsnapshot = function getsnapshot () {
     var inArray = function(needle) {
         for(var i = 0, l = this.length; i < l; i++) if(this[i] && this[i] === needle) return true;
@@ -28,6 +31,7 @@ var getsnapshot = function getsnapshot () {
             try { result = canvas.toDataURL(); } 
             catch (bug) { //no cross-domain images allowed
                 log(img.src + ' is crossdomain or don\'t come with access-control-allow.' );
+                return null;
             }
             return result;
     };
@@ -80,7 +84,7 @@ var getsnapshot = function getsnapshot () {
     var doc = window.document;
     var loc = window.location;
     var win = selWin(window);
-    var domain=loc.protocol+'//'+loc.host+(loc.port!=''?':'+loc.port:'');
+    var domain = loc.protocol + '//' + loc.host + (loc.port !='' ? ':'+loc.port : '');
 
     if (bImages) {
         log('parsing images = ' + bImages);
@@ -90,8 +94,8 @@ var getsnapshot = function getsnapshot () {
                 images[i].width = images[i].width;
                 images[i].height = images[i].height;
                 imgsrc = images[i].src;
-                if (imgsrc === null || imgsrc === undefined) continue;
-                if (domain == imgsrc.substring(0, domain.length)) {
+                if (typeof imgsrc === 'undefined' || imgsrc === null) continue;
+                //if (domain == imgsrc.substring(0, domain.length)) {
                     if (bDebug) logarray.push('parsing image ' + imgsrc);
                     if (!imgcache[imgsrc]) {
                         imgcache[imgsrc] = uriEncodeImg(images[i]);
@@ -99,7 +103,7 @@ var getsnapshot = function getsnapshot () {
                         if (bDebug) logarray.push('img cached and converted to ' + imgcache[imgsrc].substring(0,30)+' ... '+imgcache[imgsrc].substring(imgcache[imgsrc].length-30));
                     }
                     images[i].src = imgcache[imgsrc];
-                }
+                //}
             };
             logarray.length && log('\n' + logarray.join('\n'));
             imgcache = logarray = null;
@@ -121,11 +125,12 @@ var getsnapshot = function getsnapshot () {
         pEle = doc.documentElement;
         ele = (doc.body || doc.getElementsByTagName('body')[0]).cloneNode(true);
         // filter garbage blocks
-        var cleanUp = ele.querySelectorAll('#save-snapshot-overlay, #autopatchwork_bar, .notifyit_message_area, #readTools');
-        for (var i = 0; i < cleanUp.length; i++) {
-            cleanUp[i].innerHTML = '';
-            if(cleanUp[i].parentNode) cleanUp[i].parentNode.removeChild(cleanUp[i]);
-        }
+        try {
+            for (var i = 0, cleanUp = ele.querySelectorAll(FILTER_SELECTORS); i < cleanUp.length; i++) {
+                cleanUp[i].innerHTML = '';
+                if(cleanUp[i].parentNode) cleanUp[i].parentNode.removeChild(cleanUp[i]);
+            }
+        } catch (bug) {}
     }
 
     log('cloning document...');
@@ -167,21 +172,23 @@ var getsnapshot = function getsnapshot () {
     h.appendChild(b);
     
     log('parsing styles...');
-    var styles = doc.styleSheets,
-        styleStopListIDs = ['notifyit_style','sCSS','uCSS', 'qbCSS'];
+    var styles = doc.styleSheets;
     for (var style, si, i = 0; si = styles[i]; i++) {
-        style = doc.createElement('style');
-        style.type = 'text/css';
-        if (si.media && si.media.mediaText) style.media = si.media.mediaText;
         try {
-            if (si.ownerNode && si.ownerNode.id && inArray.call(styleStopListIDs, si.ownerNode.id)) continue;
-            for (var j = 0, rule; rule = si.cssRules[j]; j++) {
-                style.appendChild(doc.createTextNode(rule.cssText + '\n'));
-            }
+            if (si.ownerNode && si.ownerNode.id && inArray.call(STYLE_ID_STOPLIST, si.ownerNode.id))
+                continue;
+            style = doc.createElement('style');
+            style.type = 'text/css';
+            if (si.media && si.media.mediaText) style.media = si.media.mediaText;
+            // resolve styles css
+            for (var j = 0, rule; rule = si.cssRules[j]; j++)
+                if(rule.cssText)
+                    style.appendChild(doc.createTextNode(rule.cssText + '\n'));
         } catch (bug) {
+            style = null;
             if (si.ownerNode) style = si.ownerNode.cloneNode(false);
         }
-        h.appendChild(style);
+        if (style && (style.href || style.textContent)) h.appendChild(style);
     };
     
     var dt = doc.doctype;
@@ -218,16 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             div.setAttribute('id', 'save-snapshot-overlay');
                             document.body.appendChild(div);
 
-                            try {
                             window.location.href = getsnapshot();
-                            } catch (bug) { opera.postError(bug.stacktrace); }
     
                             window.addEventListener('focus', function(ev) {
                                 document.body.removeChild(document.getElementById("save-snapshot-overlay"));
                                 this.removeEventListener(ev.type, arguments.callee, true);
                             }, true);
 
-                            ///////////////////
+                            /////////Noitfy-It//////////
                             try {
                                 var noe = document.createEvent('CustomEvent');
                                 noe.initCustomEvent('Notify.It', false, false, {
@@ -237,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                                 document.dispatchEvent(noe);
                             } catch (bug) {}
-                            ///////////////////
+                            ////////////////////////////
                             break;
                       }
                 } else {
