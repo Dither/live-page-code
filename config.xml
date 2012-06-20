@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:live-page-code" version="1.4">
+<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:live-page-code" version="1.5">
   <name>Live Page Code</name>
   <author href="http://my.opera.com/DitherSky/blog/">Dither</author>
   <description xml:lang="en">Adds toolbar button for saving page source code with CSS styles and modifications made by scripts and the browser</description>
-  <description xml:lang="ru">Добавляет кнопку сохранения исходного кода страниц с учётом всех изменений, сделанных скриптами и браузером</description>
+  <description xml:lang="ru">Добавляет кнопку сохранения исходного кода страниц с учётом изменений, сделанных скриптами и браузером</description>
   <preference name="saveimages" value="true"/>
   <preference name="encodeb64" value="true"/>
   <preference name="debugmode" value="false"/>  
