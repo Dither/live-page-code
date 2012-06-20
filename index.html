@@ -30,12 +30,7 @@ opera.contexts.toolbar.addItem(button);
 
 function toggleButton (e) {
     var atab = opera.extension.tabs.getFocused();
-    if (v12) {
-        button.disabled = true;
-        if (!!atab.port) try { atab.port.postMessage({ type: 'ask_status' }); } catch (bug) {}
-    } else {
-        button.disabled = !!atab;
-    }
+    button.disabled = v12 ? !atab.port : !atab;
 }
 
 function setButtonState (port, state) {

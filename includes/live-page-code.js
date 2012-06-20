@@ -211,9 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var dRun = (new Date()).getTime();
             if (dRun - dLastRun > 1000) {
                 switch (e.data.type) {
-                    case 'ask_status':
-                        e.source.postMessage({type: 'status_enabled'});
-                        break;
                     case 'save-snapshot':
                     case 'save-snapshot-encode':
                         bDebug = e.data.debug;
@@ -256,6 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         dLastRun = dRun;
     }
-    opera.extension.postMessage({type: 'status_enabled'});
+    if (window.top === window.self) opera.extension.postMessage({type: 'status_enabled'});
 }, false);
 })();
