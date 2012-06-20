@@ -205,53 +205,57 @@ var getsnapshot = function getsnapshot () {
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    if(opera.extension)
-        opera.extension.onmessage = function(e) {
-            if(e.source) {
-                var dRun = (new Date()).getTime();
-                if (dRun - dLastRun > 1000) {
-                    switch (e.data.type) {
-                        case 'save-snapshot':
-                        case 'save-snapshot-encode':
-                            bDebug = e.data.debug;
-                            if(decodeURI(window.location.href).indexOf(decodeURI(e.data.url)) === -1) break;
-                            //don't know why, but Opera returns incomplete urls for tabs sometimes
-                            bImages = e.data.images;
-                            bB64enc = e.data.b64;
+    if(!opera.extension) return;
+    opera.extension.onmessage = function(e) {
+        if(!!e.source) {
+            var dRun = (new Date()).getTime();
+            if (dRun - dLastRun > 1000) {
+                switch (e.data.type) {
+                    case 'ask_status':
+                        e.source.postMessage({type: 'status_enabled'});
+                        break;
+                    case 'save-snapshot':
+                    case 'save-snapshot-encode':
+                        bDebug = e.data.debug;
+                        if(decodeURI(window.location.href).indexOf(decodeURI(e.data.url)) === -1) break;
+                        //don't know why, but Opera returns incomplete urls for tabs sometimes
+                        bImages = e.data.images;
+                        bB64enc = e.data.b64;
 
-                            // gray overlay to display some progress       
-                            var div = document.createElement('div');
-                            div.setAttribute('style', 'opacity:0.5 !important; background-color:#000 !important; width:100% !important; height:100% !important; z-index:100 !important; top:0 !important; left:0 !important; position:fixed !important;');
-                            div.setAttribute('id', 'save-snapshot-overlay');
-                            document.body.appendChild(div);
+                        // gray overlay to display some progress       
+                        var div = document.createElement('div');
+                        div.setAttribute('style', 'opacity:0.5 !important; background-color:#000 !important; width:100% !important; height:100% !important; z-index:100 !important; top:0 !important; left:0 !important; position:fixed !important;');
+                        div.setAttribute('id', 'save-snapshot-overlay');
+                        document.body.appendChild(div);
 
-                            window.location.href = getsnapshot();
-    
-                            window.addEventListener('focus', function(ev) {
-                                document.body.removeChild(document.getElementById("save-snapshot-overlay"));
-                                this.removeEventListener(ev.type, arguments.callee, true);
-                            }, true);
+                        window.location.href = getsnapshot();
 
-                            /////////Noitfy-It//////////
-                            try {
-                                var noe = document.createEvent('CustomEvent');
-                                noe.initCustomEvent('Notify.It', false, false, {
-                                    extension: 'save-snapshot',
-                                    text: 'Page snapshot created.',
-                                    type: '',
-                                });
-                                document.dispatchEvent(noe);
-                            } catch (bug) {}
-                            ////////////////////////////
-                            break;
-                      }
-                } else {
-                    log('you are trying to save too fast.');
-                }
+                        window.addEventListener('focus', function(ev) {
+                            document.body.removeChild(document.getElementById("save-snapshot-overlay"));
+                            this.removeEventListener(ev.type, arguments.callee, true);
+                        }, true);
+
+                        /////////Noitfy-It//////////
+                        try {
+                            var noe = document.createEvent('CustomEvent');
+                            noe.initCustomEvent('Notify.It', false, false, {
+                                extension: 'save-snapshot',
+                                text: 'Page snapshot created.',
+                                type: '',
+                            });
+                            document.dispatchEvent(noe);
+                        } catch (bug) {}
+                        ////////////////////////////
+                        break;
+                  }
             } else {
-                log('e.source does not exist.');
+                log('you are trying to save too fast.');
             }
-            dLastRun = dRun;
-        };
+        } else {
+            log('e.source does not exist.');
+        }
+        dLastRun = dRun;
+    }
+    opera.extension.postMessage({type: 'status_enabled'});
 }, false);
 })();

@@ -4,6 +4,8 @@ window.addEventListener('load', function () {
 if (typeof widget === 'undefined' || !widget.preferences) { storage = window.opera.scriptStorage; }
 else { storage = widget.preferences; }
 
+var v12 = (typeof opera.extension.tabGroups !== 'undefined');
+
 function s2b(s) { return s ===  'true' ? true : false; }
 function log(){ if (s2b(storage['debugmode'])) opera.postError('[LivePageCode]: ' + Array.prototype.slice.call(arguments)); }
 
@@ -26,12 +28,34 @@ var button = opera.contexts.toolbar.createItem({
 
 opera.contexts.toolbar.addItem(button);
 
-function enableButton() { if (opera.extension.tabs.getFocused()) { button.disabled = false; } else { button.disabled = true; } }
+function toggleButton (e) {
+    var atab = opera.extension.tabs.getFocused();
+    if (v12) {
+        button.disabled = true;
+        if (!!atab.port) atab.port.postMessage({ type: 'ask_status' });
+    } else {
+        button.disabled = !!atab;
+    }
+}
 
-// Enable the button when a tab is ready
-opera.extension.onconnect = enableButton;
-opera.extension.tabs.onfocus = enableButton;
-opera.extension.tabs.onblur = enableButton;
+function setButtonState (port, state) {
+    if (v12) {
+        // in case source tab is active
+        if (port === opera.extension.tabs.getFocused().port) {
+            button.disabled = !state;
+        }
+    }
+}
+
+opera.extension.onconnect = function (e) {
+    setButtonState(e.source, false)
+};
+
+opera.extension.onmessage = function (e) {
+    if (e.data.type === 'status_enabled') setButtonState(e.source, true);
+};
+
+opera.extension.tabs.onfocus = toggleButton;
 
 }, false);
 </script>
