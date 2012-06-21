@@ -12,7 +12,7 @@ function log(){ if (s2b(storage['debugmode'])) opera.postError('[LivePageCode]: 
 var button = opera.contexts.toolbar.createItem({
     disabled: true,
     title: 'Save live page code',
-    icon: 'icons/icon16.gif',
+    icon: 'icons/icon16.png',
     onclick: function () {
         log('toolbar button clicked.');
         try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}

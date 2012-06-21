@@ -18,6 +18,7 @@ Q: Is it possible to add support of _some online service_?
 A: There certainly won't be any such service support for the purpose of maximally independent extension code.  
 
 Changelog:
+
 v1.5:   
 
 * Fixed to work correctly with Opera 12

@@ -7,7 +7,7 @@
   <preference name="saveimages" value="true"/>
   <preference name="encodeb64" value="true"/>
   <preference name="debugmode" value="false"/>  
-  <icon src="icons/icon.gif"/>
+  <icon src="icons/icon.png"/>
   <!--<credit>icon.png by iconfinder.com - non-comercial free license.</credit> -->
   <license href="http://www.apache.org/licenses/LICENSE-2.0">Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
