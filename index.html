@@ -14,11 +14,14 @@ var button = opera.contexts.toolbar.createItem({
     title: 'Save live page code',
     icon: 'icons/icon16.png',
     onclick: function () {
+        var atab, aport;
         log('toolbar button clicked.');
-        try { tab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}
-        if (tab) tab.postMessage({
+        try { aport = atab = opera.extension.tabs.getFocused(); } catch (e) {log('active tab not found.');}
+        if (!atab) return;
+        if (v12) aport = atab.port;
+        aport.postMessage({
             type: 'save-snapshot',
-            url: tab.url,
+            url: atab.url,
             images: s2b(storage['saveimages']) || false,
             b64: s2b(storage['encodeb64']) || true,
             debug: s2b(storage['debugmode']) || false,
